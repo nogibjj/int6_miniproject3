@@ -1,4 +1,5 @@
 # int6_miniproject3
+[![CI](https://github.com/nogibjj/int6_miniproject3/actions/workflows/ci.yml/badge.svg)](https://github.com/nogibjj/int6_miniproject3/actions/workflows/ci.yml)
 
 This repo contains work for mini-project 3. It sets up an environment on codespaces and uses Github Actions to run a Makefile for the following: `make install`, `make test`, `make format`, `make lint`. It loads in a dataset (from Kaggle) that contains information on Spotify sound tracks and performs some basic exploratory data analysis.
 
@@ -19,7 +20,7 @@ The purpose of this project is to use polars to generate summary statistics on a
 * `create_viz(df)`: creates sample plots using the data
 * `create_report(csv)`: generates a pdf report of the data including basic summary stats and plots
 
-These functions are tested in test_main.py. To make sure github actions is working properly, I use a Makefile to test various parts of my code.
+These functions are tested in test_main.py. To make sure github actions is working properly, I use a Makefile to test various parts of my code. CI/CD PDF generation is also implemented to automatically push resources.
 
 ## Preparation
 1. Open codespaces 
