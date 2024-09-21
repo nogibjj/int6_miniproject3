@@ -148,3 +148,12 @@ def create_report(csv_file):
     pdf.output(pdf_file)
 
     print(f"Summary report written to {pdf_file}")
+
+def main():
+    spotify = read_data()
+    calc_stats(spotify)
+    create_viz(spotify)
+    create_report("data/spotify.csv")
+
+if __name__ == "__main__":
+    main()
