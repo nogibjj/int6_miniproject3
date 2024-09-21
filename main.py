@@ -1,63 +1,83 @@
-import pandas as pd
+import polars as pl
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from fpdf import FPDF
 
+
 def read_data():
-    df = pd.read_csv("data/spotify.csv")
-    df["duration_ms"] = df["duration_ms"] / 1000
-    df = df.rename(columns={"duration_ms": "duration_s"})
+    df = pl.read_csv("data/spotify.csv")
+    df = df.with_columns((pl.col("duration_ms") / 1000).alias("duration_s"))
+    df = df.drop("duration_ms")
+    #print(df.head())
     return df
 
 
 def calc_stats(df):
-    # select numerical columns of interest
-    sub_df = df[
-        [
-            "popularity",
-            "duration_s",
-            "explicit",
-            "danceability",
-            "energy",
-            "key",
-            "loudness",
-            "mode",
-            "speechiness",
-            "acousticness",
-            "instrumentalness",
-            "liveness",
-            "valence",
-            "tempo",
-            "time_signature",
-        ]
+    numerical_columns = [
+        "popularity",
+        "duration_s",
+        "explicit",
+        "danceability",
+        "energy",
+        "key",
+        "loudness",
+        "mode",
+        "speechiness",
+        "acousticness",
+        "instrumentalness",
+        "liveness",
+        "valence",
+        "tempo",
+        "time_signature"
     ]
-    # calc summary stats
-    stats = {"mean": sub_df.mean(), "median": sub_df.median(),
-             "std_dev": sub_df.std()}
-    # return as df
-    stats_df = pd.DataFrame(stats).round(2)
-    
-    # save as image
+
+    # initialize dict to store stats
+    stats_dict = {
+        "column": [],
+        "mean": [],
+        "median": [],
+        "std_dev": []
+    }
+
+    # calculate stats for each column
+    for col in numerical_columns:
+        mean_value = round(df[col].mean(),2)
+        median_value = round(df[col].median(),2)
+        std_dev_value = round(df[col].std(),2)
+        
+        # store results to dict
+        stats_dict["column"].append(col)
+        stats_dict["mean"].append(mean_value)
+        stats_dict["median"].append(median_value)
+        stats_dict["std_dev"].append(std_dev_value)
+
+    # convert dict to polars df (table format)
+    stats_df = pl.DataFrame(stats_dict)
+    # convert to pandas df
+    stats_pd = stats_df.to_pandas()
+
+    # save df as image
     fig, ax = plt.subplots(figsize=(12, len(stats_df) * 0.4))
-    ax.axis('tight')
-    ax.axis('off')
-    # create the table w/ row labels
+    ax.axis("tight")
+    ax.axis("off")
+    # create table
     table = ax.table(
-        cellText=stats_df.values,
-        rowLabels=stats_df.index,
-        colLabels=stats_df.columns,
-        cellLoc='center',
-        loc='center'
+        cellText=stats_pd.values,
+        colLabels=stats_pd.columns,
+        cellLoc="center",
+        loc="center"
     )
-    # adjust table appearance
     table.auto_set_font_size(False)
     table.set_fontsize(16)
     table.scale(1.5, 2.5)
-    # save figure as image
-    fig.savefig('resources/stats_df.png', bbox_inches='tight', dpi=300)
+
+    # save fig to folder
+    fig.savefig("resources/stats_df.png", bbox_inches="tight", dpi=300)
     plt.close()
+    print(stats_df)
     return stats_df
+
 
 def create_viz(df):
     plt.figure(figsize=(8, 4))
@@ -81,7 +101,7 @@ def create_viz(df):
 
     # save and output
     plt.tight_layout()
-    plt.savefig("resources/plot.png", dpi=300, bbox_inches='tight')
+    plt.savefig("resources/plot.png", dpi=300, bbox_inches="tight")
     plt.show()
 
 
@@ -89,8 +109,8 @@ def create_report(csv_file):
     # read data and get info
     df = read_data()
     dataset_name = os.path.basename(csv_file)
-    num_cols = df.shape[1]
-    col_names = df.columns.tolist()
+    num_cols = df.width
+    col_names = df.columns
 
     # generate stats and visualizations if not already saved
     if not os.path.exists("plot.png"):

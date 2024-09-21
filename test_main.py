@@ -1,16 +1,18 @@
 import os
+import polars as pl
 import pandas as pd
 from main import read_data, calc_stats, create_viz, create_report
 
+
 def test_read_data():
     df = read_data()
-
-    # Assert that the result is a DataFrame
-    assert isinstance(df, pd.DataFrame) and not df.empty, "Error reading data"
+    # test that result is a df
+    assert isinstance(df, pl.DataFrame) and not df.is_empty(), "Error reading data"
+    print("Data loaded successfully.")
 
 
 def test_calc_stats():
-    # Create test df
+    # creating test df
     data = {
         "popularity": [5, 10, 15, 20],
         "duration_s": [120, 240, 360, 480],
@@ -28,26 +30,33 @@ def test_calc_stats():
         "tempo": [100, 110, 120, 130],
         "time_signature": [4, 4, 3, 3],
     }
-    df = pd.DataFrame(data)
+    df = pl.DataFrame(data)
 
-    # Call the function to calculate stats
+    # call calc_stats function
     stats_df = calc_stats(df)
+    pl.Config.set_tbl_rows(50)
     print(stats_df)
 
-    # Testing values
-    assert round(stats_df.at["popularity", "mean"], 2) == 12.50, "Mean popularity does not match"
-    assert round(stats_df.at["duration_s", "median"], 2) == 300.00, "Median duration_s does not match"
-    assert round(stats_df.at["energy", "std_dev"], 2) == 0.24, "Standard deviation of energy does not match"
-    assert round(stats_df.at["key", "mean"], 2) == 2.50, "Mean key does not match"
-    assert round(stats_df.at["loudness", "median"], 2) == -6.50, "Median loudness does not match"
-    assert round(stats_df.at["tempo", "std_dev"], 2) == 12.91, "Standard deviation of tempo does not match"
+    # assert function with polars
+    def assert_value(column, metric, expected_value, tolerance=0.01):
+        # Get the value for the specified column and metric
+        actual_value = stats_df.filter(pl.col("column") == column).select(pl.col(metric)).to_numpy()[0][0]
+        assert abs(actual_value - expected_value) <= tolerance, f"{metric} for {column} does not match. Expected: {expected_value}, Got: {actual_value}"
+    
+    # run assertions
+    assert_value("popularity", "mean", 12.50)
+    assert_value("duration_s", "median", 300.00)
+    assert_value("energy", "std_dev", 0.24)
+    assert_value("key", "mean", 2.50)
+    assert_value("loudness", "median", -6.50)
+    assert_value("tempo", "std_dev", 12.91)
 
     print("All assertions passed for calc_stats.")
+
 
 def test_create_viz():
     df = read_data()
     create_viz(df)
-    print()
 
     # verify file was created and not empty
     assert os.path.exists("resources/plot.png"), "The plot.png file does not exist."
@@ -55,8 +64,10 @@ def test_create_viz():
 
     print("All assertions passed for test_create_viz.")
 
+
 def test_generate_report():
     create_report("data/spotify.csv")
+
 
 if __name__ == "__main__":
     test_read_data()
