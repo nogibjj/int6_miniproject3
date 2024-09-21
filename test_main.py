@@ -80,3 +80,4 @@ if __name__ == "__main__":
     test_calc_stats()
     test_create_viz()
     test_generate_report()
+    # testing ci/cd for report generation
