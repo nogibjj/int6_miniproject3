@@ -9,7 +9,7 @@ def read_data():
     df = pl.read_csv("data/spotify.csv")
     df = df.with_columns((pl.col("duration_ms") / 1000).alias("duration_s"))
     df = df.drop("duration_ms")
-    #print(df.head())
+    # print(df.head())
     return df
 
 
@@ -29,23 +29,18 @@ def calc_stats(df):
         "liveness",
         "valence",
         "tempo",
-        "time_signature"
+        "time_signature",
     ]
 
     # initialize dict to store stats
-    stats_dict = {
-        "column": [],
-        "mean": [],
-        "median": [],
-        "std_dev": []
-    }
+    stats_dict = {"column": [], "mean": [], "median": [], "std_dev": []}
 
     # calculate stats for each column
     for col in numerical_columns:
-        mean_value = round(df[col].mean(),2)
-        median_value = round(df[col].median(),2)
-        std_dev_value = round(df[col].std(),2)
-        
+        mean_value = round(df[col].mean(), 2)
+        median_value = round(df[col].median(), 2)
+        std_dev_value = round(df[col].std(), 2)
+
         # store results to dict
         stats_dict["column"].append(col)
         stats_dict["mean"].append(mean_value)
@@ -66,7 +61,7 @@ def calc_stats(df):
         cellText=stats_pd.values,
         colLabels=stats_pd.columns,
         cellLoc="center",
-        loc="center"
+        loc="center",
     )
     table.auto_set_font_size(False)
     table.set_fontsize(16)

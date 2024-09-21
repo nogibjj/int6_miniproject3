@@ -40,9 +40,15 @@ def test_calc_stats():
     # assert function with polars
     def assert_value(column, metric, expected_value, tolerance=0.01):
         # Get the value for the specified column and metric
-        actual_value = stats_df.filter(pl.col("column") == column).select(pl.col(metric)).to_numpy()[0][0]
-        assert abs(actual_value - expected_value) <= tolerance, f"{metric} for {column} does not match. Expected: {expected_value}, Got: {actual_value}"
-    
+        actual_value = (
+            stats_df.filter(pl.col("column") == column)
+            .select(pl.col(metric))
+            .to_numpy()[0][0]
+        )
+        assert (
+            abs(actual_value - expected_value) <= tolerance
+        ), f"{metric} for {column} does not match. Expected: {expected_value}, Got: {actual_value}"
+
     # run assertions
     assert_value("popularity", "mean", 12.50)
     assert_value("duration_s", "median", 300.00)
